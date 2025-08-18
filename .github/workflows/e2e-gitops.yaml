@@ -1,4 +1,4 @@
-name: "Run SAST, Build and push supermario image, scan image, Update deployment and version txt files by syed a bari !"
+name: "Run SAST, Build and push supermario image, scan image, Update deployment and version txt files by syed a bari!"
  
 on:
   push:

@@ -1,4 +1,4 @@
-name: "Run SAST, Build and push supermario image, scan image, Update deployment and version txt files by syed a bari"
+name: "Run SAST, Build and push supermario image, scan image, Update deployment and version txt files by MYSELF"
  
 on:
   push:
@@ -17,20 +17,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for better analysis relevance
+          fetch-depth: 0
  
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - name: SonarQube Quality Gate Check
-      #   uses: sonarsource/sonarqube-quality-gate-action@master
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   
   build_push_supermario_docker_image:
     runs-on: ubuntu-latest
@@ -56,19 +49,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
  
-      - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-        
-      - name: Get Docker Image from Docker Hub
-        run: |
-          docker pull docker.io/syedabari/supermariogitopsproject:${{ env.VERSION }}
-          docker save -o supermariolatestdockerimage.tar docker.io/syedabari/supermariogitopsproject:${{ env.VERSION }}
-     
-      - name: Run Trivy vulnerability scanner in tarball mode
+      - name: Scan Docker image directly with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          input: /github/workspace/supermariolatestdockerimage.tar
-          exit-code: '0'
+          image-ref: docker.io/syedabari/supermariogitopsproject:${{ env.VERSION }}
+          format: 'table'
+          exit-code: '0'   # set to '1' if you want pipeline to fail on vulnerabilities
           severity: 'CRITICAL,HIGH'
           
   update_k8s_yaml_version_file_with_latest_image_tag:
